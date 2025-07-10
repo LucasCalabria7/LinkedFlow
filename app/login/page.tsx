@@ -51,6 +51,9 @@ export default function Login() {
     setError('');
     setSocialLoading('google');
     try {
+      // Armazenar a URL de origem atual na localStorage para uso posterior
+      localStorage.setItem('authRedirectOrigin', window.location.origin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -72,6 +75,9 @@ export default function Login() {
     setError('');
     setSocialLoading('linkedin');
     try {
+      // Armazenar a URL de origem atual na localStorage para uso posterior
+      localStorage.setItem('authRedirectOrigin', window.location.origin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {

@@ -19,6 +19,26 @@ export default function AuthCallback() {
           console.log('Hash detectado na URL');
         }
 
+        // Recuperar a URL de origem armazenada no localStorage
+        const storedOrigin = localStorage.getItem('authRedirectOrigin');
+        console.log('URL de origem armazenada:', storedOrigin);
+        
+        // Verificar se estamos em localhost mas o redirecionamento veio de uma URL de produção
+        const isLocalhost = window.location.hostname === 'localhost';
+        const isFromProduction = storedOrigin && !storedOrigin.includes('localhost');
+        
+        if (isLocalhost && isFromProduction) {
+          console.log('Detectado redirecionamento incorreto de produção para localhost');
+          // Redirecionar de volta para a URL de produção
+          setStatus('error');
+          setMessage('Redirecionando para o ambiente correto...');
+          
+          setTimeout(() => {
+            window.location.href = `${storedOrigin}/auth/callback${hashParams}`;
+          }, 1000);
+          return;
+        }
+
         // Verificar a sessão atual
         const { data, error } = await supabase.auth.getSession();
         
@@ -36,8 +56,10 @@ export default function AuthCallback() {
           
           // Usar setTimeout para garantir que o usuário veja a mensagem de sucesso
           setTimeout(() => {
-            // Usar router.push para navegação no lado do cliente
-            router.push('/dashboard');
+            // Determinar a URL base correta para o redirecionamento
+            const baseUrl = storedOrigin || window.location.origin;
+            // Redirecionar para o dashboard na origem correta
+            window.location.href = `${baseUrl}/dashboard`;
           }, 1500);
         } else {
           console.log('Sessão não encontrada');
@@ -45,7 +67,9 @@ export default function AuthCallback() {
           setMessage('Não foi possível autenticar. Tente novamente.');
           
           setTimeout(() => {
-            router.push('/login');
+            // Determinar a URL base correta para o redirecionamento
+            const baseUrl = storedOrigin || window.location.origin;
+            window.location.href = `${baseUrl}/login`;
           }, 1500);
         }
       } catch (err) {
@@ -54,7 +78,9 @@ export default function AuthCallback() {
         setMessage('Ocorreu um erro inesperado. Tente novamente.');
         
         setTimeout(() => {
-          router.push('/login');
+          // Usar a origem armazenada ou a atual como fallback
+          const baseUrl = localStorage.getItem('authRedirectOrigin') || window.location.origin;
+          window.location.href = `${baseUrl}/login`;
         }, 1500);
       }
     };
