@@ -17,7 +17,15 @@ const supabaseOptions = {
     detectSessionInUrl: true,
     storageKey: 'supabase.auth.token', // Nome padrão para compatibilidade
     storage: isBrowser ? localStorage : undefined,
-    flowType: 'pkce' as const
+    flowType: 'pkce' as const,
+    // Configuração de cookies para persistência de sessão
+    cookieOptions: {
+      name: 'linkedflow_auth',
+      lifetime: 60 * 60 * 24 * 30, // 30 dias
+      domain: '',
+      path: '/',
+      sameSite: 'lax'
+    }
   }
 }
 
@@ -145,15 +153,45 @@ export const signInWithLinkedIn = async (): Promise<OAuthResponse> => {
   }
 }
 
-// Verificar sessão com fallback
+// Verificar sessão com fallback e atualização automática
 export const getSession = async () => {
   try {
+    // Primeiro tenta obter a sessão do Supabase
     const { data: { session } } = await supabase.auth.getSession()
-    if (session) return session
+    
+    if (session) {
+      // Se encontrou sessão válida, salva localmente e retorna
+      saveLocalSession(session)
+      return session
+    }
     
     // Se não há sessão no Supabase, tenta usar a sessão local
     const localSession = getLocalSession()
-    if (localSession) return localSession
+    
+    if (localSession) {
+      // Se encontrou sessão local, tenta validá-la
+      try {
+        // Verifica se o token ainda é válido
+        if (localSession.expires_at && new Date(localSession.expires_at * 1000) > new Date()) {
+          // Se o token ainda é válido, usa-o
+          return localSession
+        }
+        
+        // Se o token expirou mas temos refresh token, tenta renovar
+        if (localSession.refresh_token) {
+          const { data, error } = await supabase.auth.refreshSession({
+            refresh_token: localSession.refresh_token,
+          })
+          
+          if (data.session) {
+            saveLocalSession(data.session)
+            return data.session
+          }
+        }
+      } catch (refreshError) {
+        console.error('Error refreshing session:', refreshError)
+      }
+    }
 
     return null
   } catch (error) {
