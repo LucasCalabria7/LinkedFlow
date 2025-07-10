@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, getBaseUrl } from '@/lib/supabaseClient';
+import { supabase, getBaseUrl, getSession, saveLocalSession } from '@/lib/supabaseClient';
 import { Check, AlertCircle, Loader2 } from "lucide-react";
 
 export default function AuthCallback() {
@@ -37,11 +37,11 @@ export default function AuthCallback() {
           }
         }
         
-        // Obter a sessão atual
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Obter a sessão atual usando a função getSession com fallback
+        const session = await getSession();
         
-        if (error) {
-          console.error('Erro na autenticação:', error.message);
+        if (!session) {
+          console.error('Sessão não encontrada após autenticação');
           setStatus('error');
           setMessage('Falha na autenticação. Por favor, tente novamente.');
           
@@ -53,32 +53,25 @@ export default function AuthCallback() {
           return;
         }
 
-        if (session) {
-          console.log('Autenticação bem-sucedida para:', session.user.email);
-          setStatus('success');
-          setMessage('Autenticação bem-sucedida! Redirecionando...');
-          
-          // Obter a origem correta para redirecionamento
-          const storedOrigin = localStorage.getItem('authRedirectOrigin');
-          const baseUrl = storedOrigin || getBaseUrl();
-          
-          console.log('Origem para redirecionamento:', baseUrl);
-          
-          setTimeout(() => {
-            // Redirecionamento para o dashboard usando a origem correta
-            window.location.href = `${baseUrl}/dashboard`;
-          }, 1500);
-        } else {
-          console.error('Sessão não encontrada após autenticação');
-          setStatus('error');
-          setMessage('Não foi possível recuperar sua sessão. Por favor, tente novamente.');
-          
-          setTimeout(() => {
-            // Usar a origem armazenada ou a função getBaseUrl como fallback
-            const baseUrl = localStorage.getItem('authRedirectOrigin') || getBaseUrl();
-            window.location.href = `${baseUrl}/login`;
-          }, 1500);
-        }
+        // Se temos uma sessão válida
+        console.log('Autenticação bem-sucedida para:', session.user.email);
+        
+        // Garantir que a sessão seja salva localmente
+        saveLocalSession(session);
+        
+        setStatus('success');
+        setMessage('Autenticação bem-sucedida! Redirecionando...');
+        
+        // Obter a origem correta para redirecionamento
+        const storedOrigin = localStorage.getItem('authRedirectOrigin');
+        const baseUrl = storedOrigin || getBaseUrl();
+        
+        console.log('Origem para redirecionamento:', baseUrl);
+        
+        setTimeout(() => {
+          // Redirecionamento para o dashboard usando a origem correta
+          window.location.href = `${baseUrl}/dashboard`;
+        }, 1500);
       } catch (err) {
         console.error('Erro no processamento:', err);
         setStatus('error');

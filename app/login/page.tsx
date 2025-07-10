@@ -38,7 +38,7 @@ export default function Login() {
       if (error) {
         setError(error.message);
       } else if (data.user) {
-        router.push('/dashboard');
+        console.log('Login com senha iniciado com sucesso');
       }
     } catch (err) {
       setError('Erro inesperado. Tente novamente.');
@@ -52,11 +52,13 @@ export default function Login() {
     setSocialLoading('google');
     try {
       // Usar a função específica para login com Google
-      const { data, error } = await signInWithGoogle();
+      const result = await signInWithGoogle();
       
-      if (error) {
-        setError(error.message);
+      if (result.error) {
+        setError(result.error.message);
         setSocialLoading(null);
+      } else {
+        console.log('Login com Google iniciado com sucesso');
       }
     } catch (err) {
       setError('Erro ao conectar com o Google. Tente novamente.');
@@ -69,15 +71,17 @@ export default function Login() {
     setSocialLoading('linkedin');
     try {
       // Usar a função específica para login com LinkedIn
-      const { data, error } = await signInWithLinkedIn();
+      const result = await signInWithLinkedIn();
       
-      if (error) {
-        if (error.message.includes('provider is not enabled')) {
+      if (result.error) {
+        if (result.error.message.includes('provider is not enabled')) {
           setError('Provedor LinkedIn não está habilitado. Por favor, use outro método de login.');
         } else {
-          setError(error.message);
+          setError(result.error.message);
         }
         setSocialLoading(null);
+      } else {
+        console.log('Login com LinkedIn iniciado com sucesso');
       }
     } catch (err) {
       setError('Erro ao conectar com o LinkedIn. Tente novamente.');
