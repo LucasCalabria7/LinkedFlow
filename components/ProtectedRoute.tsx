@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, getSession } from '@/lib/supabaseClient';
 import type { Session } from '@supabase/supabase-js';
 
 interface ProtectedRouteProps {
@@ -15,9 +15,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sessão atual
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Verificar sessão atual usando a função aprimorada com fallback
+    const checkSession = async () => {
+      const session = await getSession();
       setSession(session);
       setLoading(false);
       
@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       }
     };
 
-    getSession();
+    checkSession();
 
     // Listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
