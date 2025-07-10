@@ -9,14 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import PublicLayout from '@/layouts/PublicLayout';
 import { supabase } from '@/lib/supabaseClient';
+import { SocialLoginButton } from '@/components/ui/SocialLoginButton';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -24,6 +27,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSocialLoading(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -40,6 +44,53 @@ export default function Login() {
       setError('Erro inesperado. Tente novamente.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setSocialLoading('google');
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) {
+        setError(error.message);
+        setSocialLoading(null);
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o Google. Tente novamente.');
+      setSocialLoading(null);
+    }
+  };
+
+  const handleLinkedInLogin = async () => {
+    setError('');
+    setSocialLoading('linkedin');
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'linkedin_oidc',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          scopes: 'openid profile email'
+        }
+      });
+      
+      if (error) {
+        if (error.message.includes('provider is not enabled')) {
+          setError('Provedor LinkedIn não está habilitado. Por favor, use outro método de login.');
+        } else {
+          setError(error.message);
+        }
+        setSocialLoading(null);
+      }
+    } catch (err) {
+      setError('Erro ao conectar com o LinkedIn. Tente novamente.');
+      setSocialLoading(null);
     }
   };
 
@@ -131,11 +182,33 @@ export default function Login() {
                 <Button
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={loading}
+                  disabled={loading || socialLoading !== null}
                 >
                   {loading ? 'Entrando...' : 'Entrar'}
                 </Button>
               </form>
+              
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-300"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-slate-500">Ou continue com</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <SocialLoginButton 
+                  provider="google" 
+                  onClick={handleGoogleLogin}
+                  disabled={loading || socialLoading !== null}
+                />
+                <SocialLoginButton 
+                  provider="linkedin" 
+                  onClick={handleLinkedInLogin}
+                  disabled={loading || socialLoading !== null}
+                />
+              </div>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-slate-600">
