@@ -1,74 +1,81 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, getBaseUrl } from '@/lib/supabaseClient';
+import { Check, AlertCircle, Loader2 } from "lucide-react";
 
 export default function AuthCallback() {
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Processando autenticação...');
+  const [message, setMessage] = useState('Autenticando...');
 
   useEffect(() => {
+    // Verifica se estamos em um ambiente de navegador
+    if (typeof window === 'undefined') return;
+    
     const processAuth = async () => {
       try {
-        // Verificar se há hash na URL
-        const hashParams = window.location.hash;
-        if (hashParams) {
-          console.log('Hash detectado na URL');
-        }
-
-        // Recuperar a URL de origem armazenada no localStorage
-        const storedOrigin = localStorage.getItem('authRedirectOrigin');
-        console.log('URL de origem armazenada:', storedOrigin);
+        console.log('Processando callback de autenticação...');
+        console.log('URL atual:', window.location.href);
         
-        // Verificar se estamos em localhost mas o redirecionamento veio de uma URL de produção
-        const isLocalhost = window.location.hostname === 'localhost';
-        const isFromProduction = storedOrigin && !storedOrigin.includes('localhost');
-        
-        if (isLocalhost && isFromProduction) {
-          console.log('Detectado redirecionamento incorreto de produção para localhost');
-          // Redirecionar de volta para a URL de produção
-          setStatus('error');
-          setMessage('Redirecionando para o ambiente correto...');
+        // Verificar se há hash na URL (redirecionamento direto do provedor OAuth)
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('Detectado hash com access_token na URL');
           
-          setTimeout(() => {
-            window.location.href = `${storedOrigin}/auth/callback${hashParams}`;
-          }, 1000);
-          return;
+          // Se estamos em localhost mas o token foi gerado para produção
+          if (window.location.origin.includes('localhost')) {
+            const storedOrigin = localStorage.getItem('authRedirectOrigin');
+            
+            if (storedOrigin && !storedOrigin.includes('localhost')) {
+              console.log('Redirecionando de localhost para produção:', storedOrigin);
+              // Preservar o hash com os tokens
+              const currentHash = window.location.hash;
+              window.location.href = `${storedOrigin}/auth/callback${currentHash}`;
+              return; // Interromper o processamento aqui
+            }
+          }
         }
-
-        // Verificar a sessão atual
-        const { data, error } = await supabase.auth.getSession();
+        
+        // Obter a sessão atual
+        const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Erro ao obter sessão:', error.message);
+          console.error('Erro na autenticação:', error.message);
           setStatus('error');
-          setMessage('Erro ao processar autenticação. Tente novamente.');
+          setMessage('Falha na autenticação. Por favor, tente novamente.');
+          
+          setTimeout(() => {
+            // Em caso de erro, redirecionar para a página de login
+            const baseUrl = localStorage.getItem('authRedirectOrigin') || getBaseUrl();
+            window.location.href = `${baseUrl}/login`;
+          }, 1500);
           return;
         }
-        
-        if (data.session) {
-          console.log('Sessão válida encontrada');
+
+        if (session) {
+          console.log('Autenticação bem-sucedida para:', session.user.email);
           setStatus('success');
           setMessage('Autenticação bem-sucedida! Redirecionando...');
           
-          // Usar setTimeout para garantir que o usuário veja a mensagem de sucesso
+          // Obter a origem correta para redirecionamento
+          const storedOrigin = localStorage.getItem('authRedirectOrigin');
+          const baseUrl = storedOrigin || getBaseUrl();
+          
+          console.log('Origem para redirecionamento:', baseUrl);
+          
           setTimeout(() => {
-            // Determinar a URL base correta para o redirecionamento
-            const baseUrl = storedOrigin || window.location.origin;
-            // Redirecionar para o dashboard na origem correta
+            // Redirecionamento para o dashboard usando a origem correta
             window.location.href = `${baseUrl}/dashboard`;
           }, 1500);
         } else {
-          console.log('Sessão não encontrada');
+          console.error('Sessão não encontrada após autenticação');
           setStatus('error');
-          setMessage('Não foi possível autenticar. Tente novamente.');
+          setMessage('Não foi possível recuperar sua sessão. Por favor, tente novamente.');
           
           setTimeout(() => {
-            // Determinar a URL base correta para o redirecionamento
-            const baseUrl = storedOrigin || window.location.origin;
+            // Usar a origem armazenada ou a função getBaseUrl como fallback
+            const baseUrl = localStorage.getItem('authRedirectOrigin') || getBaseUrl();
             window.location.href = `${baseUrl}/login`;
           }, 1500);
         }
@@ -78,8 +85,8 @@ export default function AuthCallback() {
         setMessage('Ocorreu um erro inesperado. Tente novamente.');
         
         setTimeout(() => {
-          // Usar a origem armazenada ou a atual como fallback
-          const baseUrl = localStorage.getItem('authRedirectOrigin') || window.location.origin;
+          // Usar a origem armazenada ou a função getBaseUrl como fallback
+          const baseUrl = localStorage.getItem('authRedirectOrigin') || getBaseUrl();
           window.location.href = `${baseUrl}/login`;
         }, 1500);
       }
@@ -94,35 +101,39 @@ export default function AuthCallback() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="text-center bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-        {status === 'loading' && (
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-        )}
-        
-        {status === 'success' && (
-          <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-        )}
-        
-        {status === 'error' && (
-          <div className="h-12 w-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-        )}
-        
-        <h2 className={`text-xl font-semibold mb-2 ${status === 'error' ? 'text-red-600' : status === 'success' ? 'text-green-600' : 'text-blue-600'}`}>
-          {status === 'loading' ? 'Autenticando...' : 
-           status === 'success' ? 'Autenticado com sucesso!' : 
-           'Erro na autenticação'}
-        </h2>
-        
-        <p className="text-slate-600">{message}</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="text-center">
+          {status === 'loading' && (
+            <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                <Loader2 className="h-8 w-8 text-blue-600 dark:text-blue-500 animate-spin" />
+              </div>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-gray-100">{message}</h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Por favor, aguarde enquanto processamos sua autenticação.</p>
+            </>
+          )}
+          
+          {status === 'success' && (
+            <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+                <Check className="h-8 w-8 text-green-600 dark:text-green-500" />
+              </div>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-gray-100">{message}</h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Você será redirecionado em instantes.</p>
+            </>
+          )}
+          
+          {status === 'error' && (
+            <>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-500" />
+              </div>
+              <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-gray-100">Erro na autenticação</h2>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">{message}</p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

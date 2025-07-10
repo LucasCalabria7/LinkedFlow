@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import PublicLayout from '@/layouts/PublicLayout';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, signInWithGoogle, signInWithLinkedIn } from '@/lib/supabaseClient';
 import { SocialLoginButton } from '@/components/ui/SocialLoginButton';
 
 export default function Register() {
@@ -94,25 +94,8 @@ export default function Register() {
     setSuccess('');
     setSocialLoading('google');
     try {
-      // Armazenar a URL de origem atual na localStorage para uso posterior
-      localStorage.setItem('authRedirectOrigin', window.location.origin);
-      
-      // Determinar a URL correta para redirecionamento
-      // Isso garante que usaremos a URL de produção quando estivermos em produção
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-            // Forçar a URL de site para ser a mesma da origem atual
-            site_url: window.location.origin
-          },
-        }
-      });
+      // Usar a função específica para login com Google
+      const { data, error } = await signInWithGoogle();
       
       if (error) {
         setError(error.message);
@@ -129,24 +112,8 @@ export default function Register() {
     setSuccess('');
     setSocialLoading('linkedin');
     try {
-      // Armazenar a URL de origem atual na localStorage para uso posterior
-      localStorage.setItem('authRedirectOrigin', window.location.origin);
-      
-      // Determinar a URL correta para redirecionamento
-      // Isso garante que usaremos a URL de produção quando estivermos em produção
-      const redirectUrl = `${window.location.origin}/auth/callback`;
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'linkedin_oidc',
-        options: {
-          redirectTo: redirectUrl,
-          scopes: 'openid profile email',
-          queryParams: {
-            // Forçar a URL de site para ser a mesma da origem atual
-            site_url: window.location.origin
-          }
-        }
-      });
+      // Usar a função específica para login com LinkedIn
+      const { data, error } = await signInWithLinkedIn();
       
       if (error) {
         if (error.message.includes('provider is not enabled')) {
