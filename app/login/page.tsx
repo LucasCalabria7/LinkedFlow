@@ -54,10 +54,18 @@ export default function Login() {
       // Armazenar a URL de origem atual na localStorage para uso posterior
       localStorage.setItem('authRedirectOrigin', window.location.origin);
       
+      // Determinar a URL correta para redirecionamento
+      // Isso garante que usaremos a URL de produção quando estivermos em produção
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: redirectUrl,
+          queryParams: {
+            // Forçar a URL de site para ser a mesma da origem atual
+            site_url: window.location.origin
+          }
         }
       });
       
@@ -78,11 +86,19 @@ export default function Login() {
       // Armazenar a URL de origem atual na localStorage para uso posterior
       localStorage.setItem('authRedirectOrigin', window.location.origin);
       
+      // Determinar a URL correta para redirecionamento
+      // Isso garante que usaremos a URL de produção quando estivermos em produção
+      const redirectUrl = `${window.location.origin}/auth/callback`;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          scopes: 'openid profile email'
+          redirectTo: redirectUrl,
+          scopes: 'openid profile email',
+          queryParams: {
+            // Forçar a URL de site para ser a mesma da origem atual
+            site_url: window.location.origin
+          }
         }
       });
       
