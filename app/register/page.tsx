@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Building2, AlertCircle, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Eye, EyeOff, Building2 } from 'lucide-react';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import PublicLayout from '@/layouts/PublicLayout';
 import { supabase, signInWithGoogle, signInWithLinkedIn } from '@/lib/supabaseClient';
 import { SocialLoginButton } from '@/components/ui/SocialLoginButton';
@@ -20,7 +20,6 @@ export default function Register() {
     firstName: '',
     lastName: '',
     email: '',
-    company: '',
     password: '',
     confirmPassword: ''
   });
@@ -51,279 +50,98 @@ export default function Register() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Registrar usuário com email e senha
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
-            company: formData.company,
-          }
-        }
+          },
+        },
       });
 
-      if (error) {
-        setError(error.message);
-      } else if (data.user) {
-        // Se o usuário foi criado com sucesso
-        if (data.user.email_confirmed_at) {
-          // E-mail já confirmado, redirecionar para dashboard
-          router.push('/dashboard');
-        } else {
-          // E-mail precisa ser confirmado
-          setSuccess('Conta criada com sucesso! Verifique seu e-mail para confirmar a conta.');
-        }
-      }
-    } catch (err) {
-      setError('Erro inesperado. Tente novamente.');
+      if (signUpError) throw signUpError;
+
+      setSuccess('Conta criada com sucesso! Verifique seu email para confirmar o cadastro.');
+      
+      // Redirecionar após um breve delay
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
+      
+    } catch (err: any) {
+      console.error('Erro ao registrar:', err);
+      setError(err.message || 'Ocorreu um erro ao criar sua conta. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleGoogleLogin = async () => {
     setError('');
-    setSuccess('');
     setSocialLoading('google');
     try {
-      // Usar a função específica para login com Google
-      const result = await signInWithGoogle();
-      
-      if (result.error) {
-        setError(result.error.message);
-        setSocialLoading(null);
-      } else {
-        // Sucesso - o redirecionamento será feito pelo Supabase
-        console.log('Registro com Google iniciado com sucesso');
-      }
-      setSocialLoading(null);
-    } catch (err) {
-      setError('Erro ao conectar com o Google. Tente novamente.');
+      await signInWithGoogle();
+    } catch (err: any) {
+      console.error('Erro ao entrar com Google:', err);
+      setError(err.message || 'Ocorreu um erro ao entrar com Google');
       setSocialLoading(null);
     }
   };
 
   const handleLinkedInLogin = async () => {
     setError('');
-    setSuccess('');
     setSocialLoading('linkedin');
     try {
-      // Usar a função específica para login com LinkedIn
-      const result = await signInWithLinkedIn();
-      
-      if (result.error) {
-        if (result.error.message.includes('provider is not enabled')) {
-          setError('Login com LinkedIn não está disponível no momento.');
-        } else {
-          setError(result.error.message);
-        }
-        setSocialLoading(null);
-      } else {
-        // Sucesso - o redirecionamento será feito pelo Supabase
-        console.log('Registro com LinkedIn iniciado com sucesso');
-      }
-      setSocialLoading(null);
-    } catch (err) {
-      setError('Erro ao conectar com o LinkedIn. Tente novamente.');
+      await signInWithLinkedIn();
+    } catch (err: any) {
+      console.error('Erro ao entrar com LinkedIn:', err);
+      setError(err.message || 'Ocorreu um erro ao entrar com LinkedIn');
       setSocialLoading(null);
     }
   };
 
   return (
     <PublicLayout>
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <Building2 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-slate-900">Crie sua conta</h2>
-            <p className="mt-2 text-slate-600">Comece seu teste gratuito com LinkedFlow</p>
-          </div>
-
-          <Card className="border-slate-200 shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">Cadastrar</CardTitle>
-              <CardDescription className="text-center">
-                Preencha suas informações para começar
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error && (
-                <Alert variant="destructive" className="mb-6">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {success && (
-                <Alert className="mb-6 border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">{success}</AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">Nome</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder="João"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Sobrenome</Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="Silva"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="joao@empresa.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    disabled={loading}
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Elementos decorativos de fundo */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-linkedin/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-slate-100 rounded-full blur-2xl opacity-70"></div>
+        
+        <div className="w-full max-w-2xl relative z-10">
+          <Card variant="elevated" className="border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden mx-auto">
+            <div className="h-1.5 w-full bg-gradient-to-r from-linkedin via-blue-500 to-linkedin"></div>
+            <div className="p-8">
+              <div className="flex justify-center mb-6">
+                <Link href="/" className="group relative">
+                  <div className="absolute inset-0 bg-blue-500/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ease-in-out"></div>
+                  <Image 
+                    src="/assets/logo-simbolo-azul.png" 
+                    alt="LinkedFlow" 
+                    width={80} 
+                    height={80} 
+                    className="h-16 w-16 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95" 
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company">Empresa</Label>
-                  <Input
-                    id="company"
-                    name="company"
-                    type="text"
-                    placeholder="Nome da sua empresa"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Crie uma senha"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={loading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-slate-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-slate-400" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirmar senha</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirme sua senha"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      required
-                      disabled={loading}
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      disabled={loading}
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-slate-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-slate-400" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                    required
-                    disabled={loading}
-                  />
-                  <label htmlFor="terms" className="ml-2 text-sm text-slate-600">
-                    Eu concordo com os{' '}
-                    <Link href="#" className="text-blue-600 hover:text-blue-500">
-                      Termos de Serviço
-                    </Link>{' '}
-                    e{' '}
-                    <Link href="#" className="text-blue-600 hover:text-blue-500">
-                      Política de Privacidade
-                    </Link>
-                  </label>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={loading || socialLoading !== null}
-                >
-                  {loading ? 'Criando conta...' : 'Criar conta'}
-                </Button>
-              </form>
-              
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-300"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-slate-500">Ou continue com</span>
-                </div>
+                </Link>
               </div>
               
-              <div className="space-y-3">
+              <CardTitle className="text-2xl font-urbanist font-bold text-center mb-2">Crie sua conta</CardTitle>
+              <CardDescription className="text-center mb-8">
+                Comece seu teste gratuito com LinkedFlow
+              </CardDescription>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <SocialLoginButton 
                   provider="google" 
                   onClick={handleGoogleLogin}
@@ -335,19 +153,152 @@ export default function Register() {
                   disabled={loading || socialLoading !== null}
                 />
               </div>
-
-              <div className="mt-6 text-center">
-                <p className="text-sm text-slate-600">
-                  Já tem uma conta?{' '}
-                  <Link
-                    href="/login"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                  >
-                    Entrar
-                  </Link>
-                </p>
+              
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-4 text-slate-500 font-medium">Ou cadastre-se com e-mail</span>
+                </div>
               </div>
-            </CardContent>
+                
+              {error && (
+                <Alert variant="error" withIcon className="mb-6">
+                  <AlertTitle>Erro</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+                
+              {success && (
+                <Alert variant="success" withIcon className="mb-6">
+                  <AlertTitle>Sucesso!</AlertTitle>
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
+                
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    label="Nome"
+                    placeholder="João"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    label="Sobrenome"
+                    placeholder="Silva"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+                </div>
+
+                <div className="space-y-6">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    label="E-mail"
+                    placeholder="joao@empresa.com"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+
+
+                </div>
+
+                <div className="space-y-6">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    label="Senha"
+                    placeholder="Crie uma senha"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                    icon={showPassword ? <EyeOff size={18} className="text-slate-500" /> : <Eye size={18} className="text-slate-500" />}
+                    iconPosition="right"
+                    onIconClick={() => setShowPassword(!showPassword)}
+                    helperText="Mínimo de 6 caracteres"
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    label="Confirmar senha"
+                    placeholder="Confirme sua senha"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                    disabled={loading}
+                    icon={showConfirmPassword ? <EyeOff size={18} className="text-slate-500" /> : <Eye size={18} className="text-slate-500" />}
+                    iconPosition="right"
+                    onIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    error={formData.password !== formData.confirmPassword && formData.confirmPassword !== '' ? 'As senhas não coincidem' : ''}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    className="h-4 w-4 text-linkedin focus:ring-linkedin border-slate-200 rounded"
+                    required
+                    disabled={loading}
+                  />
+                  <label htmlFor="terms" className="ml-2 text-sm text-slate-600 hover:text-slate-800 transition-colors">
+                    Eu concordo com os{' '}
+                    <Link href="#" className="text-linkedin hover:text-linkedin/80 transition-colors font-medium">
+                      Termos de Serviço
+                    </Link>{' '}
+                    e{' '}
+                    <Link href="#" className="text-linkedin hover:text-linkedin/80 transition-colors font-medium">
+                      Política de Privacidade
+                    </Link>
+                  </label>
+                </div>
+
+                <PrimaryButton
+                  type="submit"
+                  fullWidth
+                  isLoading={loading}
+                  disabled={loading || socialLoading !== null}
+                  className="mt-6 py-2.5 text-base font-medium shadow-md hover:shadow-lg"
+                >
+                  {loading ? 'Criando conta...' : 'Criar conta'}
+                </PrimaryButton>
+              </form>
+              
+              <p className="text-center text-sm text-slate-600 mt-6">
+                Já tem uma conta?{' '}
+                <Link
+                  href="/login"
+                  className="font-medium text-linkedin hover:text-linkedin/80 transition-colors"
+                >
+                  Entrar
+                </Link>
+              </p>
+            </div>
           </Card>
         </div>
       </div>

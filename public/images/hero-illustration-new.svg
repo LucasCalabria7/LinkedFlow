@@ -1,0 +1,93 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Elements -->
+  <rect width="800" height="600" rx="20" fill="#F0F9FF" opacity="0.4"/>
+  <circle cx="600" cy="150" r="100" fill="#0077B5" opacity="0.05"/>
+  <circle cx="200" cy="450" r="120" fill="#0077B5" opacity="0.05"/>
+  
+  <!-- Dashboard Frame -->
+  <rect x="100" y="100" width="600" height="400" rx="16" fill="white" stroke="#0077B5" stroke-width="2" filter="drop-shadow(0px 8px 24px rgba(0, 119, 181, 0.15))"/>
+  
+  <!-- Top Bar -->
+  <rect x="100" y="100" width="600" height="60" rx="16 16 0 0" fill="#0077B5" opacity="0.1"/>
+  <circle cx="130" cy="130" r="10" fill="#0077B5"/>
+  <circle cx="160" cy="130" r="10" fill="#0077B5" opacity="0.7"/>
+  <circle cx="190" cy="130" r="10" fill="#0077B5" opacity="0.4"/>
+  
+  <!-- Sidebar -->
+  <rect x="100" y="160" width="150" height="340" fill="#FAFBFC"/>
+  <rect x="120" y="190" width="110" height="36" rx="8" fill="#0077B5" opacity="0.1"/>
+  <rect x="120" y="190" width="4" height="36" rx="2" fill="#0077B5"/>
+  <rect x="134" y="202" width="80" height="12" rx="6" fill="#0077B5" opacity="0.6"/>
+  
+  <rect x="120" y="240" width="110" height="36" rx="8" fill="white"/>
+  <rect x="134" y="252" width="80" height="12" rx="6" fill="#94A3B8"/>
+  
+  <rect x="120" y="290" width="110" height="36" rx="8" fill="white"/>
+  <rect x="134" y="302" width="80" height="12" rx="6" fill="#94A3B8"/>
+  
+  <rect x="120" y="340" width="110" height="36" rx="8" fill="white"/>
+  <rect x="134" y="352" width="80" height="12" rx="6" fill="#94A3B8"/>
+  
+  <!-- Main Content -->
+  <rect x="270" y="180" width="410" height="70" rx="12" fill="#FAFBFC" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="290" y="200" width="200" height="16" rx="8" fill="#0077B5" opacity="0.8"/>
+  <rect x="290" y="224" width="150" height="10" rx="5" fill="#94A3B8" opacity="0.6"/>
+  <rect x="600" y="205" width="60" height="24" rx="12" fill="#0077B5"/>
+  <rect x="620" y="212" width="20" height="10" rx="5" fill="white"/>
+  
+  <!-- Analytics Section -->
+  <rect x="270" y="270" width="190" height="140" rx="12" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="290" y="290" width="100" height="16" rx="8" fill="#0077B5" opacity="0.8"/>
+  <rect x="290" y="316" width="150" height="74" rx="4" fill="#FAFBFC"/>
+  
+  <!-- Chart -->
+  <path d="M290 380 L300 360 L320 370 L340 340 L360 350 L380 330 L400 320 L420 350" stroke="#0077B5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="300" cy="360" r="4" fill="#0077B5"/>
+  <circle cx="320" cy="370" r="4" fill="#0077B5"/>
+  <circle cx="340" cy="340" r="4" fill="#0077B5"/>
+  <circle cx="360" cy="350" r="4" fill="#0077B5"/>
+  <circle cx="380" cy="330" r="4" fill="#0077B5"/>
+  <circle cx="400" cy="320" r="4" fill="#0077B5"/>
+  <circle cx="420" cy="350" r="4" fill="#0077B5"/>
+  
+  <!-- Content Cards -->
+  <rect x="480" y="270" width="200" height="60" rx="12" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="290" width="120" height="12" rx="6" fill="#0077B5" opacity="0.8"/>
+  <rect x="500" y="310" width="80" height="8" rx="4" fill="#94A3B8" opacity="0.6"/>
+  <circle cx="650" cy="300" r="15" fill="#0077B5" opacity="0.1"/>
+  <path d="M645 300 L650 305 L655 295" stroke="#0077B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <rect x="480" y="350" width="200" height="60" rx="12" fill="white" stroke="#E2E8F0" stroke-width="1"/>
+  <rect x="500" y="370" width="120" height="12" rx="6" fill="#0077B5" opacity="0.8"/>
+  <rect x="500" y="390" width="80" height="8" rx="4" fill="#94A3B8" opacity="0.6"/>
+  <circle cx="650" cy="380" r="15" fill="#0077B5" opacity="0.1"/>
+  <path d="M645 380 L650 385 L655 375" stroke="#0077B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Floating Elements -->
+  <rect x="650" y="130" width="30" height="30" rx="15" fill="#0077B5" opacity="0.1" transform="rotate(15 650 130)"/>
+  <rect x="150" y="420" width="30" height="30" rx="15" fill="#0077B5" opacity="0.1" transform="rotate(-10 150 420)"/>
+  <circle cx="700" cy="400" r="20" fill="#0077B5" opacity="0.05"/>
+  <circle cx="680" cy="420" r="10" fill="#0077B5" opacity="0.1"/>
+  
+  <!-- LinkedIn Connection Lines -->
+  <path d="M720 200 C750 220, 780 240, 750 300" stroke="#0077B5" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <path d="M50 350 C20 300, 30 250, 80 220" stroke="#0077B5" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  
+  <!-- LinkedIn Icons -->
+  <rect x="720" y="180" width="40" height="40" rx="20" fill="#0077B5" opacity="0.2"/>
+  <path d="M735 190 L745 200 L735 210" stroke="#0077B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <rect x="40" y="350" width="40" height="40" rx="20" fill="#0077B5" opacity="0.2"/>
+  <path d="M55 360 L65 370 L55 380" stroke="#0077B5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Animation Hint Elements -->
+  <circle cx="400" cy="450" r="5" fill="#0077B5" opacity="0.3">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="420" cy="450" r="5" fill="#0077B5" opacity="0.3">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="0.5s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="440" cy="450" r="5" fill="#0077B5" opacity="0.3">
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" begin="1s" repeatCount="indefinite" />
+  </circle>
+</svg>

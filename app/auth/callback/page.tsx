@@ -59,19 +59,45 @@ export default function AuthCallback() {
         // Garantir que a sessão seja salva localmente
         saveLocalSession(session);
         
-        setStatus('success');
-        setMessage('Autenticação bem-sucedida! Redirecionando...');
-        
-        // Obter a origem correta para redirecionamento
-        const storedOrigin = localStorage.getItem('authRedirectOrigin');
-        const baseUrl = storedOrigin || getBaseUrl();
-        
-        console.log('Origem para redirecionamento:', baseUrl);
-        
-        setTimeout(() => {
-          // Redirecionamento para o dashboard usando a origem correta
-          window.location.href = `${baseUrl}/dashboard`;
-        }, 1500);
+        // Verificar se o usuário já completou o onboarding
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('has_completed_onboarding')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (error) throw error;
+          
+          setStatus('success');
+          setMessage('Autenticação bem-sucedida! Redirecionando...');
+          
+          // Obter a origem correta para redirecionamento
+          const storedOrigin = localStorage.getItem('authRedirectOrigin');
+          const baseUrl = storedOrigin || getBaseUrl();
+          
+          console.log('Origem para redirecionamento:', baseUrl);
+          
+          setTimeout(() => {
+            // Redirecionar para onboarding se não completou, ou para dashboard se já completou
+            const redirectPath = data?.has_completed_onboarding === true ? '/dashboard' : '/onboarding';
+            window.location.href = `${baseUrl}${redirectPath}`;
+          }, 1500);
+        } catch (error) {
+          console.error('Erro ao verificar status de onboarding:', error);
+          
+          setStatus('success');
+          setMessage('Autenticação bem-sucedida! Redirecionando...');
+          
+          // Obter a origem correta para redirecionamento
+          const storedOrigin = localStorage.getItem('authRedirectOrigin');
+          const baseUrl = storedOrigin || getBaseUrl();
+          
+          // Em caso de erro, redirecionar para onboarding por segurança
+          setTimeout(() => {
+            window.location.href = `${baseUrl}/onboarding`;
+          }, 1500);
+        }
       } catch (err) {
         console.error('Erro no processamento:', err);
         setStatus('error');
