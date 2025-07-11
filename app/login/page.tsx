@@ -2,14 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import PrimaryButton from '@/components/ui/PrimaryButton';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import PublicLayout from '@/layouts/PublicLayout';
 import { supabase, signInWithGoogle, signInWithLinkedIn } from '@/lib/supabaseClient';
 import { SocialLoginButton } from '@/components/ui/SocialLoginButton';
@@ -91,108 +90,35 @@ export default function Login() {
 
   return (
     <PublicLayout>
-      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <Building2 className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-slate-900">Bem-vindo de volta</h2>
-            <p className="mt-2 text-slate-600">Entre na sua conta LinkedFlow</p>
-          </div>
+      <div className="min-h-[calc(100vh-200px)] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Elementos decorativos de fundo */}
+        <div className="absolute top-0 left-0 w-64 h-64 bg-linkedin/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+        
+        <div className="w-full max-w-2xl relative z-10">
 
-          <Card className="border-slate-200 shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center">Entrar</CardTitle>
-              <CardDescription className="text-center">
-                Digite seu e-mail e senha para acessar sua conta
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error && (
-                <Alert variant="destructive" className="mb-6">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Digite seu e-mail"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={loading}
-                    className="w-full"
+          <Card variant="elevated" className="border-slate-200 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden max-w-4xl mx-auto">
+            <div className="h-1.5 w-full bg-gradient-to-r from-linkedin via-blue-500 to-linkedin"></div>
+            <div className="p-8 pb-6">
+              <div className="flex justify-center mb-6">
+                <Link href="/" className="group relative">
+                  <div className="absolute inset-0 bg-blue-500/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ease-in-out"></div>
+                  <Image 
+                    src="/assets/logo-simbolo-azul.png" 
+                    alt="LinkedFlow" 
+                    width={80} 
+                    height={80} 
+                    className="h-16 w-16 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-active:scale-95" 
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Digite sua senha"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="w-full pr-10"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                      disabled={loading}
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-slate-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-slate-400" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded"
-                      disabled={loading}
-                    />
-                    <span className="ml-2 text-sm text-slate-600">Lembrar de mim</span>
-                  </label>
-                  <Link
-                    href="#"
-                    className="text-sm text-blue-600 hover:text-blue-500"
-                  >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  disabled={loading || socialLoading !== null}
-                >
-                  {loading ? 'Entrando...' : 'Entrar'}
-                </Button>
-              </form>
-              
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-300"></span>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-slate-500">Ou continue com</span>
-                </div>
+                </Link>
               </div>
               
-              <div className="space-y-3">
+              <CardTitle className="text-2xl font-urbanist font-bold text-center mb-2">Entrar</CardTitle>
+              <CardDescription className="text-center mb-8">
+                Entre com sua conta para acessar o LinkedFlow
+              </CardDescription>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <SocialLoginButton 
                   provider="google" 
                   onClick={handleGoogleLogin}
@@ -204,19 +130,100 @@ export default function Login() {
                   disabled={loading || socialLoading !== null}
                 />
               </div>
+              
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-200"></span>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-4 text-slate-500 font-medium">Ou entre com e-mail</span>
+                </div>
+              </div>
+              
+              {error && (
+                <Alert variant="error" withIcon className="mb-6">
+                  <AlertTitle>Erro</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-              <div className="mt-6 text-center">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    label="E-mail"
+                    placeholder="joao@empresa.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    label="Senha"
+                    placeholder="Sua senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    icon={showPassword ? <EyeOff size={18} className="text-slate-500" /> : <Eye size={18} className="text-slate-500" />}
+                    iconPosition="right"
+                    onIconClick={() => setShowPassword(!showPassword)}
+                    className="bg-slate-50 border-slate-200 focus:border-linkedin focus:ring-2 focus:ring-linkedin/20 rounded-lg transition-all shadow-sm"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="remember"
+                      className="h-4 w-4 text-linkedin focus:ring-linkedin border-slate-200 rounded"
+                      disabled={loading}
+                    />
+                    <label htmlFor="remember" className="ml-2 text-sm text-slate-600 hover:text-slate-800 transition-colors">
+                      Lembrar de mim
+                    </label>
+                  </div>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-linkedin hover:text-linkedin/80 transition-colors"
+                  >
+                    Esqueceu a senha?
+                  </Link>
+                </div>
+                
+                <PrimaryButton
+                  type="submit"
+                  fullWidth
+                  isLoading={loading}
+                  disabled={loading || socialLoading !== null}
+                  className="mt-4 py-2.5 text-base font-medium shadow-md hover:shadow-lg"
+                >
+                  {loading ? 'Entrando...' : 'Entrar'}
+                </PrimaryButton>
+              </form>
+              
+              <div className="mt-8 text-center">
                 <p className="text-sm text-slate-600">
                   Não tem uma conta?{' '}
                   <Link
                     href="/register"
-                    className="font-medium text-blue-600 hover:text-blue-500"
+                    className="font-medium text-linkedin hover:text-linkedin/80 transition-colors"
                   >
                     Cadastre-se
                   </Link>
                 </p>
               </div>
-            </CardContent>
+            </div>
           </Card>
         </div>
       </div>

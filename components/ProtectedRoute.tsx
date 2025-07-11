@@ -13,16 +13,45 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Verificar sessão atual usando a função aprimorada com fallback
     const checkSession = async () => {
       const session = await getSession();
       setSession(session);
-      setLoading(false);
       
       if (!session) {
+        setLoading(false);
         router.push('/login');
+        return;
+      }
+      
+      // Verificar se o usuário completou o onboarding
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('has_completed_onboarding')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        setHasCompletedOnboarding(data?.has_completed_onboarding || false);
+        
+        // Se não completou o onboarding, redirecionar
+        if (data?.has_completed_onboarding === false && !window.location.pathname.includes('/onboarding')) {
+          router.push('/onboarding');
+        }
+      } catch (error) {
+        console.error('Erro ao verificar status de onboarding:', error);
+        // Assumir que não completou o onboarding em caso de erro
+        setHasCompletedOnboarding(false);
+        if (!window.location.pathname.includes('/onboarding')) {
+          router.push('/onboarding');
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -30,12 +59,40 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     // Listener para mudanças na autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
-        setLoading(false);
         
         if (event === 'SIGNED_OUT' || !session) {
+          setLoading(false);
           router.push('/login');
+          return;
+        }
+        
+        // Verificar status de onboarding quando a autenticação muda
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('has_completed_onboarding')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) throw error;
+          
+          setHasCompletedOnboarding(data?.has_completed_onboarding || false);
+          
+          // Se não completou o onboarding, redirecionar
+          if (data?.has_completed_onboarding === false && !window.location.pathname.includes('/onboarding')) {
+            router.push('/onboarding');
+          }
+        } catch (error) {
+          console.error('Erro ao verificar status de onboarding:', error);
+          // Assumir que não completou o onboarding em caso de erro
+          setHasCompletedOnboarding(false);
+          if (!window.location.pathname.includes('/onboarding')) {
+            router.push('/onboarding');
+          }
+        } finally {
+          setLoading(false);
         }
       }
     );
@@ -55,9 +112,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Se não estiver autenticado, não renderiza nada (redirecionamento já foi feito)
-  if (!session) {
+  // Se não estiver autenticado ou ainda está carregando, não renderiza nada
+  if (!session || loading) {
     return null;
+  }
+  
+  // Se o usuário está autenticado mas não completou o onboarding e não está na página de onboarding
+  if (hasCompletedOnboarding === false && !window.location.pathname.includes('/onboarding')) {
+    return null; // Não renderiza nada, o redirecionamento já foi feito
   }
 
   return <>{children}</>;

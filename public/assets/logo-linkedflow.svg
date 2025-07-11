@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Círculo de fundo -->
+  <circle cx="40" cy="40" r="36" fill="#0077B5" fill-opacity="0.1"/>
+  <circle cx="40" cy="40" r="36" stroke="#0077B5" stroke-width="2" stroke-opacity="0.3"/>
+  
+  <!-- Letra L estilizada -->
+  <path d="M24 24H32V56H24V24Z" fill="#0077B5"/>
+  <path d="M36 24H44V32H36V24Z" fill="#0077B5"/>
+  <path d="M36 36H44V56H36V36Z" fill="#0077B5"/>
+  
+  <!-- Ícone de fluxo -->
+  <path d="M48 24H56V36H48V24Z" fill="#0077B5"/>
+  <path d="M48 44H56V56H48V44Z" fill="#0077B5"/>
+  <path d="M52 36V44" stroke="#0077B5" stroke-width="2" stroke-linecap="round"/>
+  <path d="M48 40H56" stroke="#0077B5" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Linhas de conexão -->
+  <path d="M44 28H48" stroke="#0077B5" stroke-width="2" stroke-linecap="round"/>
+  <path d="M44 52H48" stroke="#0077B5" stroke-width="2" stroke-linecap="round"/>
+</svg>
